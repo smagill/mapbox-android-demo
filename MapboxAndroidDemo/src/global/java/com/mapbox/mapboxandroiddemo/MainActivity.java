@@ -1,11 +1,15 @@
 package com.mapbox.mapboxandroiddemo;
 
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -48,7 +52,6 @@ import com.mapbox.mapboxandroiddemo.examples.dds.InfoWindowSymbolLayerActivity;
 import com.mapbox.mapboxandroiddemo.examples.dds.KotlinStyleCirclesCategoricallyActivity;
 import com.mapbox.mapboxandroiddemo.examples.dds.LineGradientActivity;
 import com.mapbox.mapboxandroiddemo.examples.dds.MultipleGeometriesActivity;
-import com.mapbox.mapboxandroiddemo.examples.javaservices.MultipleGeometriesDirectionsRouteActivity;
 import com.mapbox.mapboxandroiddemo.examples.dds.MultipleHeatmapStylingActivity;
 import com.mapbox.mapboxandroiddemo.examples.dds.PolygonHolesActivity;
 import com.mapbox.mapboxandroiddemo.examples.dds.PolygonSelectToggleActivity;
@@ -63,21 +66,22 @@ import com.mapbox.mapboxandroiddemo.examples.extrusions.Indoor3DMapActivity;
 import com.mapbox.mapboxandroiddemo.examples.extrusions.MarathonExtrusionActivity;
 import com.mapbox.mapboxandroiddemo.examples.extrusions.PopulationDensityExtrusionActivity;
 import com.mapbox.mapboxandroiddemo.examples.extrusions.RotationExtrusionActivity;
-import com.mapbox.mapboxandroiddemo.examples.javaservices.ElevationQueryActivity;
 import com.mapbox.mapboxandroiddemo.examples.javaservices.DirectionsActivity;
 import com.mapbox.mapboxandroiddemo.examples.javaservices.DirectionsGradientLineActivity;
+import com.mapbox.mapboxandroiddemo.examples.javaservices.ElevationQueryActivity;
 import com.mapbox.mapboxandroiddemo.examples.javaservices.GeocodingActivity;
 import com.mapbox.mapboxandroiddemo.examples.javaservices.IsochroneActivity;
 import com.mapbox.mapboxandroiddemo.examples.javaservices.IsochroneSeekbarActivity;
 import com.mapbox.mapboxandroiddemo.examples.javaservices.MapMatchingActivity;
 import com.mapbox.mapboxandroiddemo.examples.javaservices.MatrixApiActivity;
+import com.mapbox.mapboxandroiddemo.examples.javaservices.MultipleGeometriesDirectionsRouteActivity;
 import com.mapbox.mapboxandroiddemo.examples.javaservices.OptimizationActivity;
 import com.mapbox.mapboxandroiddemo.examples.javaservices.SimplifyPolylineActivity;
 import com.mapbox.mapboxandroiddemo.examples.javaservices.StaticImageActivity;
 import com.mapbox.mapboxandroiddemo.examples.javaservices.TilequeryActivity;
 import com.mapbox.mapboxandroiddemo.examples.javaservices.TurfLineDistanceActivity;
-import com.mapbox.mapboxandroiddemo.examples.javaservices.TurfRingActivity;
 import com.mapbox.mapboxandroiddemo.examples.javaservices.TurfPhysicalCircleActivity;
+import com.mapbox.mapboxandroiddemo.examples.javaservices.TurfRingActivity;
 import com.mapbox.mapboxandroiddemo.examples.labs.AnimatedImageGifActivity;
 import com.mapbox.mapboxandroiddemo.examples.labs.AnimatedMarkerActivity;
 import com.mapbox.mapboxandroiddemo.examples.labs.CalendarIntegrationActivity;
@@ -89,6 +93,7 @@ import com.mapbox.mapboxandroiddemo.examples.labs.InsetMapActivity;
 import com.mapbox.mapboxandroiddemo.examples.labs.LocationPickerActivity;
 import com.mapbox.mapboxandroiddemo.examples.labs.MagicWindowKotlinActivity;
 import com.mapbox.mapboxandroiddemo.examples.labs.MapFogBackgroundActivity;
+import com.mapbox.mapboxandroiddemo.examples.labs.MapInNavDrawerActivity;
 import com.mapbox.mapboxandroiddemo.examples.labs.MarkerFollowingRouteActivity;
 import com.mapbox.mapboxandroiddemo.examples.labs.MovingIconWithTrailingLineActivity;
 import com.mapbox.mapboxandroiddemo.examples.labs.PictureInPictureActivity;
@@ -157,6 +162,14 @@ import com.mapbox.mapboxandroiddemo.examples.styles.ZoomDependentFillColorActivi
 import com.mapbox.mapboxandroiddemo.model.ExampleItemModel;
 import com.mapbox.mapboxandroiddemo.utils.ItemClickSupport;
 import com.mapbox.mapboxandroiddemo.utils.SettingsDialogView;
+import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.camera.CameraPosition;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.maps.MapFragment;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.maps.Style;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -252,9 +265,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // in case it's an info tile
         if (model != null) {
           if (showJavaExamples) {
-            startActivity(model.getJavaActivity());
+            startActivityForResult(model.getJavaActivity(),2543);
           } else {
-            startActivity(model.getKotlinActivity());
+            startActivityForResult(model.getKotlinActivity(), 2543);
           }
 
           analytics.clickedOnIndividualExample(getString(model.getTitle()), loggedIn);
@@ -437,6 +450,66 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
       analytics.openedAppForFirstTime(getResources().getBoolean(R.bool.isTablet), loggedIn);
     }
     firstTimeRunChecker.updateSharedPrefWithCurrentVersion();
+  }
+
+  @Override
+  protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
+    Log.d("MainActivity", "onActivityResult: ");
+    if (requestCode == 2543 && resultCode  == RESULT_OK) {
+
+      Log.d("MainActivity", "onActivityResult: requestCode == 2543");
+      DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
+
+
+      if (data.getBooleanExtra("CHECKED_SWITCH_STATUS_FROM_NAV_ACTIVITY", false)) {
+        drawerLayout.openDrawer(Gravity.START); //Edit Gravity.START need API 14
+
+        // Mapbox access token is configured here. This needs to be called either in your application
+        // object or in the same activity which contains the mapview.
+        Mapbox.getInstance(this, getString(R.string.access_token));
+
+        // Create supportMapFragment
+        MapFragment mapFragment;
+
+        // Create fragment
+        final FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+        LatLng manila = new LatLng(14.5906216, 120.9799696);
+
+        // Build mapboxMap
+        MapboxMapOptions options = new MapboxMapOptions();
+        options.camera(new CameraPosition.Builder()
+            .target(manila)
+            .zoom(9)
+            .build());
+
+        // Create map fragment
+        mapFragment = MapFragment.newInstance(options);
+
+        // Add map fragment to parent container
+        transaction.add(R.id.nav_drawer_map_frag_container, mapFragment, "com.mapbox.map");
+        transaction.commit();
+
+        mapFragment.getMapAsync(new OnMapReadyCallback() {
+          @Override
+          public void onMapReady(MapboxMap mapboxMap) {
+
+            mapboxMap.setStyle(Style.SATELLITE, new Style.OnStyleLoaded() {
+              @Override
+              public void onStyleLoaded(@NonNull Style style) {
+
+
+
+              }
+            });
+          }
+        });
+
+      } else {
+        drawerLayout.closeDrawer(Gravity.START); //Edit Gravity.START need API 14
+      }
+    }
   }
 
   private void buildSettingsDialog() {
@@ -1286,6 +1359,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         new Intent(MainActivity.this, SharedPreferencesActivity.class),
         null,
         R.string.activity_lab_shared_preferences_url, true, BuildConfig.MIN_SDK_VERSION));
+
+    exampleItemModels.add(new ExampleItemModel(
+      R.id.nav_lab,
+      R.string.activity_lab_map_in_nav_drawer_title,
+      R.string.activity_lab_map_in_nav_drawer_description,
+      new Intent(MainActivity.this, MapInNavDrawerActivity.class),
+      null,
+      R.string.activity_lab_map_in_nav_drawer_url, false, BuildConfig.MIN_SDK_VERSION
+    ));
 
     exampleItemModels.add(new ExampleItemModel(
       R.id.nav_dds,

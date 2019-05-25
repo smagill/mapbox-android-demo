@@ -135,4 +135,6 @@
     <string name="activity_lab_spinning_icon_title">Spinning icon</string>
     <string name="activity_lab_change_attribution_color_title">Style attribution</string>
     <string name="activity_lab_shared_preferences_title">Shared preferences</string>
+    <string name="activity_lab_map_in_nav_drawer_title">Map in navigation drawer</string>
+    <string name="activity_java_turf_ring_title">Hollow circle</string>
 </resources>
