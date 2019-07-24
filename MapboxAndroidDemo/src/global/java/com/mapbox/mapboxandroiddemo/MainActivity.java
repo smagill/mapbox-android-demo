@@ -42,6 +42,7 @@ import com.mapbox.mapboxandroiddemo.examples.dds.CircleToIconTransitionActivity;
 import com.mapbox.mapboxandroiddemo.examples.dds.CreateHotspotsActivity;
 import com.mapbox.mapboxandroiddemo.examples.dds.DrawGeojsonLineActivity;
 import com.mapbox.mapboxandroiddemo.examples.dds.DrawPolygonActivity;
+import com.mapbox.mapboxandroiddemo.examples.dds.ExpandingCircleRadiusAnimationActivity;
 import com.mapbox.mapboxandroiddemo.examples.dds.ExpressionIntegrationActivity;
 import com.mapbox.mapboxandroiddemo.examples.dds.HeatmapActivity;
 import com.mapbox.mapboxandroiddemo.examples.dds.ImageClusteringActivity;
@@ -1538,6 +1539,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
       null,
       new Intent(MainActivity.this, KotlinSupportMapFragmentActivity.class),
       R.string.activity_basic_kotlin_support_map_frag_url, true, BuildConfig.MIN_SDK_VERSION));
+
+    exampleItemModels.add(new ExampleItemModel(
+      R.id.nav_dds,
+      R.string.activity_dds_expanding_circle_radius_animation_title,
+      R.string.activity_dds_expanding_circle_radius_animation_description,
+      new Intent(MainActivity.this, ExpandingCircleRadiusAnimationActivity.class),
+      null,
+      R.string.activity_dds_expanding_circle_radius_animation_url, false, BuildConfig.MIN_SDK_VERSION));
 
     exampleItemModels.add(new ExampleItemModel(
       R.id.nav_location,
