@@ -47,6 +47,7 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineWidth;
 public class DashedLineDirectionsPickerActivity extends AppCompatActivity
   implements OnMapReadyCallback, MapboxMap.OnCameraIdleListener {
 
+  private static final String SOURCE_ID = "SOURCE_ID";
   private MapView mapView;
   private MapboxMap mapboxMap;
   private FeatureCollection dashedLineDirectionsFeatureCollection;
@@ -117,11 +118,10 @@ public class DashedLineDirectionsPickerActivity extends AppCompatActivity
    * to the place picker location
    */
   private void initDottedLineSourceAndLayer(@NonNull Style loadedMapStyle) {
-    dashedLineDirectionsFeatureCollection = FeatureCollection.fromFeatures(new Feature[] {});
-    loadedMapStyle.addSource(new GeoJsonSource("SOURCE_ID", dashedLineDirectionsFeatureCollection));
+    loadedMapStyle.addSource(new GeoJsonSource(SOURCE_ID));
     loadedMapStyle.addLayerBelow(
       new LineLayer(
-        "DIRECTIONS_LAYER_ID", "SOURCE_ID").withProperties(
+        "DIRECTIONS_LAYER_ID", SOURCE_ID).withProperties(
         lineWidth(4.5f),
         lineColor(Color.BLACK),
         lineTranslate(new Float[] {0f, 4f}),
@@ -185,7 +185,7 @@ public class DashedLineDirectionsPickerActivity extends AppCompatActivity
             directionsRouteFeatureList.add(Feature.fromGeometry(LineString.fromLngLats(coordinates)));
           }
           dashedLineDirectionsFeatureCollection = FeatureCollection.fromFeatures(directionsRouteFeatureList);
-          GeoJsonSource source = style.getSourceAs("SOURCE_ID");
+          GeoJsonSource source = style.getSourceAs(SOURCE_ID);
           if (source != null) {
             source.setGeoJson(dashedLineDirectionsFeatureCollection);
           }
