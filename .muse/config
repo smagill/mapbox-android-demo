@@ -2,3 +2,4 @@ build          = "gradlew"
 arguments      = [ "assembleAndroidTest" ]
 jdk11          = false
 androidVersion = 28
+whitelist = ["tommd"]
